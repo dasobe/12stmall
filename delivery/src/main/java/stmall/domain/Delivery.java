@@ -33,14 +33,14 @@ public class Delivery {
 
     @PostPersist
     public void onPostPersist() {
-        DeliveryStarted deliveryStarted = new DeliveryStarted(this);
-        deliveryStarted.publishAfterCommit();
+        // DeliveryStarted deliveryStarted = new DeliveryStarted(this);
+        // deliveryStarted.publishAfterCommit();
     }
 
     @PostUpdate
     public void onPostUpdate() {
-        DeliveryCancelled deliveryCancelled = new DeliveryCancelled(this);
-        deliveryCancelled.publishAfterCommit();
+        // DeliveryCancelled deliveryCancelled = new DeliveryCancelled(this);
+        // deliveryCancelled.publishAfterCommit();
     }
 
     public static DeliveryRepository repository() {
@@ -53,23 +53,34 @@ public class Delivery {
     public void completeDelivery(
         CompleteDeliveryCommand completeDeliveryCommand
     ) {
+        this.setCourier(completeDeliveryCommand.getCourier());
+        this.setStatus("DeliveryCompleted");
         DeliverCompleted deliverCompleted = new DeliverCompleted(this);
+
         deliverCompleted.publishAfterCommit();
     }
 
     public void returndelivery(ReturndeliveryCommand returndeliveryCommand) {
+        this.setCourier(returndeliveryCommand.getCourier());
+        this.setStatus("DeliveryReturned");
         DeliveryReturned deliveryReturned = new DeliveryReturned(this);
         deliveryReturned.publishAfterCommit();
     }
 
     public static void startDelivery(OrderPlaced orderPlaced) {
-        /** Example 1:  new item 
+        // /** Example 1:  new item 
         Delivery delivery = new Delivery();
+        delivery.setOrderId(orderPlaced.getId());
+        delivery.setProductId(orderPlaced.getProductId());
+        delivery.setProductName(orderPlaced.getProductName());
+        delivery.setQty(orderPlaced.getQty());
+        delivery.setStatus("DeliveryStarted");
+        delivery.setUserId(orderPlaced.getUserId());
         repository().save(delivery);
 
         DeliveryStarted deliveryStarted = new DeliveryStarted(delivery);
         deliveryStarted.publishAfterCommit();
-        */
+    
 
         /** Example 2:  finding and process
         
@@ -87,26 +98,18 @@ public class Delivery {
     }
 
     public static void cancelDelivery(OrderCancelled orderCancelled) {
-        /** Example 1:  new item 
-        Delivery delivery = new Delivery();
-        repository().save(delivery);
-
-        DeliveryCancelled deliveryCancelled = new DeliveryCancelled(delivery);
-        deliveryCancelled.publishAfterCommit();
-        */
-
-        /** Example 2:  finding and process
+   
         
-        repository().findById(orderCancelled.get???()).ifPresent(delivery->{
+        repository().findByOrderId(orderCancelled.getId()).ifPresent(delivery->{
             
-            delivery // do something
+            delivery.setStatus("DeliveryCancelled");
             repository().save(delivery);
 
             DeliveryCancelled deliveryCancelled = new DeliveryCancelled(delivery);
             deliveryCancelled.publishAfterCommit();
 
          });
-        */
+        
 
     }
 }
